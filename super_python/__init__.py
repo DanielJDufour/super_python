@@ -1,6 +1,16 @@
+import inspect
 from re import compile as re_compile
 from re import sub as re_sub
 from re import UNICODE
+
+def unpack(d):
+    stack = inspect.stack()
+    try:
+        locals_ = stack[1][0].f_locals
+    finally:
+        del stack
+    for key in d:
+        locals_[key] = d[key]
 
 class super_str(str):
     def remove(self, i):

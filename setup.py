@@ -3,7 +3,7 @@ from distutils.core import setup
 setup(
   name = 'super_python',
   packages = ['super_python'],
-  version = '0.2',
+  version = '0.3',
   description = 'Make Your Python Super',
   author = 'Daniel J. Dufour',
   author_email = 'daniel.j.dufour@gmail.com',
