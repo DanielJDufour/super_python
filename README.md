@@ -7,17 +7,18 @@ For example, if we have a list of cars, it's obvious what "number of cars" means
 
 # Example
 ```
-from super_python import evaluate as M
-cars = ["Audi", "Benz", "Bentley", "Audi"]
+from super_python import superfy
 
-# prints 4
-print m('Number of Cars')
+@superfy
+def test():
+    cars = ["Audi", "Benz", "Bentley", "Audi"]
 
-# prints 3
-print m('Number of Unique Cars')
+    print number_of_cars
+    # prints 4
 
-# print set
-print m('Set of Cars')
+    print set_of_cars
+    # prints set(['Benz', 'Bentley', 'Audi'])
 
-# prints Audi
-print m('Most Common Car')
+    print "number_of_unique_cars", number_of_unique_cars
+    # prints 3
+

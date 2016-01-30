@@ -179,6 +179,42 @@ def second_most_common_count_of_(list_of_things):
         return tuples[0][1] or tuples[1][1] or tuples[2][1]
 
 
+class dependent_set_counter():
+
+    def __init__(self, name_of_independent):
+        self.hash_value = {}
+        self.name_of_independent = name_of_independent
+
+        for name_of_method in dir(0):
+            try:
+              exec("""
+def {0}(*args):
+    return getattr(self.calculate(), "{0}")(*args)
+self.{0} = {0}
+""".format(name_of_method)) in locals()
+            except Exception as e:
+              print e
+
+    def calculate(self, frame=None):
+        #print "starting calculate with frame = ", frame
+        if not frame:
+            frame = inspect.stack()[2][0]
+
+        if self.name_of_independent in frame.f_locals:
+            value_of_independent = frame.f_locals[self.name_of_independent]
+        elif self.name_of_independent in frame.f_globals:
+            value_of_independent = frame.f_globals[self.name_of_independent].calculate(frame)
+        else:
+            raise Exception("can't find " + self.name_of_independent + " anywhere")
+ 
+        hash_of_independent = value_of_independent.__str__()
+        #print "hash_of_independent = ", hash_of_independent
+        if hash_of_independent not in self.hash_value:
+            if hasattr(value_of_independent, "__len__"):
+                self.hash_value[hash_of_independent] = len(value_of_independent)
+        return self.hash_value[hash_of_independent]
+        
+
 
 class dependent_int():
 
@@ -197,9 +233,10 @@ self.{0} = {0}
             except Exception as e:
               print e
 
-    def calculate(self):
+    def calculate(self, frame=None):
         #print "starting calculate"
-        frame = inspect.stack()[2][0]
+        if not frame:
+            frame = inspect.stack()[2][0]
         #print "frame is", dir(frame)
         #print "frame is", frame.f_code
         flocals = frame.f_locals
@@ -219,6 +256,10 @@ self.{0} = {0}
             raise NameError(self.name_of_independent + " not found in frame")
         #print "finishing calculate"
 
+
+
+
+
 class dependent_set():
 
     def __init__(self, name_of_independent):
@@ -236,9 +277,10 @@ self.{0} = {0}
             except Exception as e:
               print e
 
-    def calculate(self):
-        #print "starting calculate"
-        frame = inspect.stack()[2][0]
+    def calculate(self, frame=None):
+        #print "starting calculate with frame = ", frame
+        if not frame:
+            frame = inspect.stack()[2][0]
         #print "frame is", dir(frame)
         #print "frame is", frame.f_code
         flocals = frame.f_locals
@@ -253,6 +295,9 @@ self.{0} = {0}
             return self.hash_value[hash_of_independent]
         
         else:
+            #return #eval(self.name_of_independent + ".calculate(frame)") in frame.f_globals
+            #f_globals = frame.f_globals
+
             raise NameError(self.name_of_independent + " not found in frame")
         #print "finishing calculate"
 
@@ -269,11 +314,12 @@ def superfy(f):
     #print "co_varnames = ", dir(f)
     names_of_variables = sorted(f.func_code.co_varnames)
     for name_of_variable in names_of_variables:
-        print "for name_of_variable", name_of_variable
+        #print "for name_of_variable", name_of_variable
         if name_of_variable.count("_") <= 1 and match(u"^[a-z_]{2,}s$", name_of_variable):
-            print "\tmatch!"
+            #print "\tmatch!"
             f.func_globals["number_of_" + name_of_variable] = f.func_globals["count_of_" + name_of_variable] = dependent_int(name_of_variable)
             f.func_globals["set_of_" + name_of_variable] = dependent_set(name_of_variable)
+            f.func_globals["number_of_unique_" + name_of_variable] = f.func_globals["number_of_distinct_" + name_of_variable] = dependent_set_counter("set_of_" + name_of_variable)
 
     return f
 
