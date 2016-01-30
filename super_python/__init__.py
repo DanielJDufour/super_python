@@ -7,10 +7,11 @@ from re import match
 import sys
 import ctypes
 from os.path import dirname, realpath
+from os import getcwd
 
 
 def get_hash(arg):
-    if isinstance(arg, list) or isinstance(arg, set):
+    if isinstance(arg, list) or isinstance(arg, set) or isinstance(arg, dict):
         return str(arg)
     else:
         return str(arg.__hash__())
@@ -18,7 +19,7 @@ def get_hash(arg):
 def memoize(f):
     memo = {}
     def helper(*args):
-        print "args are", args, type(args)
+        ##print "args are", args, type(args)
      #try
         arg_hash = ""
         for i in range(len(args)):
@@ -27,22 +28,22 @@ def memoize(f):
         if arg_hash not in memo:
             memo[arg_hash] = f(*args)
 
-        print "\tmemo is", memo
+        ##print "\tmemo is", memo
 
         return memo[arg_hash]
      #except Exception as e:
-     #     print e,"when", arg
+     #     ##print e,"when", arg
 
     return helper
 
 def evaluate(name):
 
-    print "starting super_python.evaluate with", name
+    ##print "starting super_python.evaluate with", name
 
     name = name.lower()
 
     f_locals = inspect.stack()[1][0].f_locals
-    print "f_locals are", f_locals
+    ##print "f_locals are", f_locals
 
     mg = match("set of ([a-z]*s)", name)
     if mg:
@@ -50,16 +51,16 @@ def evaluate(name):
         if base in f_locals:
             return set_of_(f_locals[base])
 
-    mg = match("number of unique ([a-z]*s)", name)
+    mg = match("(?:number|count) of unique ([a-z]*s)", name)
     if mg:
         base = mg.group(1)
         if base in f_locals:
             return number_of_unique_(f_locals[base])
 
-    mg = match("number of ([a-z]*s)", name)
+    mg = match("(?:number|count) of ([a-z]*s)", name)
     if mg:
         base = mg.group(1)
-        print "base is", base
+        ##print "base is", base
         if base in f_locals:
             return number_of_(f_locals[base])
 
@@ -69,22 +70,40 @@ def evaluate(name):
         if base in f_locals:
             return most_common_of_(f_locals[base])
 
-    mg = match("([a-z]+) matching ([a-z]+)", name)
-    iterable = mg.group(1)
-    term = mg.group(2)
-    if iterable and term:
-        if iterable in f_locals and term in f_locals:
-            print "term is", term
-            iterable = f_locals[iterable]
-            print "iterable = ", iterable
-            value = f_locals[term]
-            print "value = ", value
-            return list_matching_term_and_value(iterable, term, value)
+    if "matching" in name:
+        mg = match("([a-z]+) matching ([a-z]+)", name)
+        if mg:
+            iterable = mg.group(1)
+            term = mg.group(2)
+            if iterable and term:
+                if iterable in f_locals and term in f_locals:
+                    ##print "term is", term
+                    iterable = f_locals[iterable]
+                    ##print "iterable = ", iterable
+                    value = f_locals[term]
+                    ##print "value = ", value
+                    return list_matching_term_and_value(iterable, term, value)
+
+    mg = match("([a-z]+) of ([a-z]+)", name)
+    if mg:
+        name_of_property, name_of_obj = mg.groups()
+        obj = f_locals[name_of_obj]
+        return property_of_object(name_of_property, obj)
+        
+        
+@memoize
+def property_of_object(prop, obj):
+    if isinstance(obj, dict):
+        if prop in obj:
+            return obj[prop]
+
+    if hasattr(obj, prop):
+        return getattr(obj, prop)
 
 
 @memoize
 def list_matching_term_and_value(lst, term, value):
-    print "starting list_ma"
+    ##print "starting list_ma"
     return_list = []
     for element in lst:
         if isinstance(element, str) or isinstance(element, unicode):
@@ -110,7 +129,7 @@ def set_of_(list_of_things):
 
 @memoize
 def number_of_(inpt):
-    print "starting number_of_ with", inpt
+    ##print "starting number_of_ with", inpt
     type_of_inpt = str(type(inpt))
     if type_of_inpt == "<type 'list'>":
         return len(inpt)
@@ -159,21 +178,100 @@ def second_most_common_count_of_(list_of_things):
     elif number_of_(tuples) >= 3:
         return tuples[0][1] or tuples[1][1] or tuples[2][1]
 
-def superfy():
-    pdf = path_to_directory_of_this_file = dirname(realpath(__file__))
-    print "pdf is", pdf
+
+
+class dependent_variable():
+   
+    def __init__(self):
+        self.value = None
+
+    def __eq__(self, other): return self.value == other
+
+d = dependent_variable
+
+class dependent_int():
+
+    def __init__(self, name_of_independent):
+        #print "starting dpeenden_int"
+        self.hash_value = {}
+        self.name_of_independent = name_of_independent
+
+        for name_of_method in dir(0):
+            try:
+              exec("""
+def {0}(*args):
+    return getattr(self.calculate(), "{0}")(*args)
+self.{0} = {0}
+""".format(name_of_method)) in locals()
+            except Exception as e:
+              print e
+    def __type__(self):
+        return type(int)
+
+    def calculate(self):
+        #print "starting calculate"
+        frame = inspect.stack()[2][0]
+        #print "frame is", dir(frame)
+        #print "frame is", frame.f_code
+        flocals = frame.f_locals
+        if self.name_of_independent in flocals:
+            #print self.name_of_independent, "in flocals"
+            value_of_independent = flocals[self.name_of_independent]
+            hash_of_independent = value_of_independent.__str__()
+            #print "hash_of_independent = ", hash_of_independent
+            if hash_of_independent not in self.hash_value:
+                if hasattr(value_of_independent, "__len__"):
+                    self.hash_value[hash_of_independent] = len(value_of_independent)
+                elif hasattr(value_of_independent, "count"):
+                    self.hash_value[hash_of_independent] = value_of_independent.count()
+            return self.hash_value[hash_of_independent]
+        
+        else:
+            raise NameError(self.name_of_independent + " not found in frame")
+        #print "finishing calculate"
+
+
+
+def superfy(f):
+
+    #print "f is", f
+
+    stack = inspect.stack()
+    frame = stack[1][0]
+    f_locals = frame.f_locals
+
+    #print "co_varnames = ", dir(f)
+    names_of_variables = sorted(f.func_code.co_varnames)
+    for name_of_variable in names_of_variables:
+        print "for name_of_variable", name_of_variable
+        if name_of_variable.count("_") <= 1 and match(u"^[a-z_]{2,}s$", name_of_variable):
+            print "\tmatch!"
+            f.func_globals["number_of_" + name_of_variable] = f.func_globals["count_of_" + name_of_variable] = dependent_int(name_of_variable)
+
+    return f
+
+
+
+"""
+    path_to_directory_of_this_file = dirname(realpath(__file__))
+    ##print "pdf is", pdf
     current_working_directory = getcwd()
-
-
-# special print method for some objects
+    result = f(*args)
+    del path_to_directory_of_this_file
+    del current_working_directory
+    return result
+"""
+"""
+# special ##print method for some objects
 def super_print(*args):
     try:
         for arg in args:
-            print arg,
-        print "\n"
+            #print arg,
+        #print "\n"
     except Exception as e:
-        print e
+        #print e
 p = super_print
+"""
 
 # help from http://faster-cpython.readthedocs.org/mutable.html
 def unpack(d):
