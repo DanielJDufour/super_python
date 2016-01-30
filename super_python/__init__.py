@@ -180,15 +180,6 @@ def second_most_common_count_of_(list_of_things):
 
 
 
-class dependent_variable():
-   
-    def __init__(self):
-        self.value = None
-
-    def __eq__(self, other): return self.value == other
-
-d = dependent_variable
-
 class dependent_int():
 
     def __init__(self, name_of_independent):
@@ -205,8 +196,6 @@ self.{0} = {0}
 """.format(name_of_method)) in locals()
             except Exception as e:
               print e
-    def __type__(self):
-        return type(int)
 
     def calculate(self):
         #print "starting calculate"
@@ -230,6 +219,43 @@ self.{0} = {0}
             raise NameError(self.name_of_independent + " not found in frame")
         #print "finishing calculate"
 
+class dependent_set():
+
+    def __init__(self, name_of_independent):
+        #print "starting dpeenden_int"
+        self.hash_value = {}
+        self.name_of_independent = name_of_independent
+
+        for name_of_method in dir(set):
+            try:
+              exec("""
+def {0}(*args):
+    return getattr(self.calculate(), "{0}")(*args)
+self.{0} = {0}
+""".format(name_of_method)) in locals()
+            except Exception as e:
+              print e
+
+    def calculate(self):
+        #print "starting calculate"
+        frame = inspect.stack()[2][0]
+        #print "frame is", dir(frame)
+        #print "frame is", frame.f_code
+        flocals = frame.f_locals
+        if self.name_of_independent in flocals:
+            #print self.name_of_independent, "in flocals"
+            value_of_independent = flocals[self.name_of_independent]
+            hash_of_independent = value_of_independent.__str__()
+            #print "hash_of_independent = ", hash_of_independent
+            if hash_of_independent not in self.hash_value:
+                if hasattr(value_of_independent, "__iter__"):
+                    self.hash_value[hash_of_independent] = set(value_of_independent)
+            return self.hash_value[hash_of_independent]
+        
+        else:
+            raise NameError(self.name_of_independent + " not found in frame")
+        #print "finishing calculate"
+
 
 
 def superfy(f):
@@ -247,6 +273,7 @@ def superfy(f):
         if name_of_variable.count("_") <= 1 and match(u"^[a-z_]{2,}s$", name_of_variable):
             print "\tmatch!"
             f.func_globals["number_of_" + name_of_variable] = f.func_globals["count_of_" + name_of_variable] = dependent_int(name_of_variable)
+            f.func_globals["set_of_" + name_of_variable] = dependent_set(name_of_variable)
 
     return f
 
