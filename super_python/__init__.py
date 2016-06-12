@@ -334,17 +334,15 @@ def superfy(f):
     del current_working_directory
     return result
 """
-"""
+
 # special ##print method for some objects
-def super_print(*args):
+def p(*args):
     try:
         for arg in args:
-            #print arg,
-        #print "\n"
+            print arg,
+        print "\n"
     except Exception as e:
-        #print e
-p = super_print
-"""
+        print e
 
 # help from http://faster-cpython.readthedocs.org/mutable.html
 def unpack(d):
