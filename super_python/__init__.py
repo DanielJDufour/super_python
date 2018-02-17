@@ -106,7 +106,7 @@ def list_matching_term_and_value(lst, term, value):
     ##print "starting list_ma"
     return_list = []
     for element in lst:
-        if isinstance(element, str) or isinstance(element, unicode):
+        if isinstance(element, str) or isinstance(element, str):
             if element == value:
                 return_list.append(element)
         elif isinstance(element, dict):
@@ -187,13 +187,13 @@ class dependent_set_counter():
 
         for name_of_method in dir(0):
             try:
-              exec("""
+              exec(("""
 def {0}(*args):
     return getattr(self.calculate(), "{0}")(*args)
 self.{0} = {0}
-""".format(name_of_method)) in locals()
+""".format(name_of_method)), locals())
             except Exception as e:
-              print e
+              print(e)
 
     def calculate(self, frame=None):
         #print "starting calculate with frame = ", frame
@@ -225,13 +225,13 @@ class dependent_int():
 
         for name_of_method in dir(0):
             try:
-              exec("""
+              exec(("""
 def {0}(*args):
     return getattr(self.calculate(), "{0}")(*args)
 self.{0} = {0}
-""".format(name_of_method)) in locals()
+""".format(name_of_method)), locals())
             except Exception as e:
-              print e
+              print(e)
 
     def calculate(self, frame=None):
         #print "starting calculate"
@@ -269,13 +269,13 @@ class dependent_set():
 
         for name_of_method in dir(set):
             try:
-              exec("""
+              exec(("""
 def {0}(*args):
     return getattr(self.calculate(), "{0}")(*args)
 self.{0} = {0}
-""".format(name_of_method)) in locals()
+""".format(name_of_method)), locals())
             except Exception as e:
-              print e
+              print(e)
 
     def calculate(self, frame=None):
         #print "starting calculate with frame = ", frame
@@ -312,14 +312,14 @@ def superfy(f):
     f_locals = frame.f_locals
 
     #print "co_varnames = ", dir(f)
-    names_of_variables = sorted(f.func_code.co_varnames)
+    names_of_variables = sorted(f.__code__.co_varnames)
     for name_of_variable in names_of_variables:
         #print "for name_of_variable", name_of_variable
-        if name_of_variable.count("_") <= 1 and match(u"^[a-z_]{2,}s$", name_of_variable):
+        if name_of_variable.count("_") <= 1 and match("^[a-z_]{2,}s$", name_of_variable):
             #print "\tmatch!"
-            f.func_globals["number_of_" + name_of_variable] = f.func_globals["count_of_" + name_of_variable] = dependent_int(name_of_variable)
-            f.func_globals["set_of_" + name_of_variable] = dependent_set(name_of_variable)
-            f.func_globals["number_of_unique_" + name_of_variable] = f.func_globals["number_of_distinct_" + name_of_variable] = dependent_set_counter("set_of_" + name_of_variable)
+            f.__globals__["number_of_" + name_of_variable] = f.__globals__["count_of_" + name_of_variable] = dependent_int(name_of_variable)
+            f.__globals__["set_of_" + name_of_variable] = dependent_set(name_of_variable)
+            f.__globals__["number_of_unique_" + name_of_variable] = f.__globals__["number_of_distinct_" + name_of_variable] = dependent_set_counter("set_of_" + name_of_variable)
 
     return f
 
@@ -339,10 +339,10 @@ def superfy(f):
 def p(*args):
     try:
         for arg in args:
-            print arg,
-        print "\n"
+            print(arg, end=' ')
+        print("\n")
     except Exception as e:
-        print e
+        print(e)
 
 # help from http://faster-cpython.readthedocs.org/mutable.html
 def unpack(d):
@@ -381,23 +381,23 @@ class super_str(str):
         elif isinstance(i, list):
             return re_sub(re_compile('(' + '|'.join(i) + ')' + '$'), '', self)
 
-class super_unicode(unicode):
+class super_unicode(str):
     def remove(self, i):
-        if isinstance(i, unicode):
-            self.replace(i,u'')
+        if isinstance(i, str):
+            self.replace(i,'')
         elif isinstance(i, list):
             for e in i:
                 self = self.replace(e,'')
         return self
 
     def lremove(self, i):
-        if isinstance(i, unicode):
-            return re_sub(re_compile('^' + i, UNICODE), u'', self)
+        if isinstance(i, str):
+            return re_sub(re_compile('^' + i, UNICODE), '', self)
         elif isinstance(i, list):
             return re_sub(re_compile('^' + '(' + '|'.join(i) + ')', UNICODE), '', self)
 
     def rremove(self, i):
-        if isinstance(i, unicode):
+        if isinstance(i, str):
             return re_sub(re_compile(i + '$', UNICODE), '', self)
         elif isinstance(i, list):
             return re_sub(re_compile('(' + '|'.join(i) + ')' + '$', UNICODE), '', self)

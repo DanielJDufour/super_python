@@ -10,12 +10,12 @@ class TestMethods(unittest.TestCase):
 
     def tearDown(self):
         t = time.time() - self.startTime
-        print "%s: %.3f" % (self.id(), t)
+        print("%s: %.3f" % (self.id(), t))
 
     def test_print(self):
-        print "\nstarting test_print"
+        print("\nstarting test_print")
         cars = ["Audi", "Benz", "Corola", "Audi", "Benz", "Audi"]
-        print "set of cars = ", ("set of cars")
+        print("set of cars = ", ("set of cars"))
         self.assertEqual(M("number of cars"), 6)
         self.assertEqual(M("number of unique cars"), 3)
         self.assertEqual(M("most common car"), "Audi")
@@ -23,7 +23,7 @@ class TestMethods(unittest.TestCase):
         self.assertEqual(M("cars matching name"), ["Audi","Audi","Audi"])
 
     def test_baseline(self):
-        print "\nstarting test_baseline"
+        print("\nstarting test_baseline")
         from collections import Counter
         cars = ["Audi", "Benz", "Corola", "Audi", "Benz", "Audi"]
         self.assertEqual(len(cars), 6)
